@@ -82,7 +82,10 @@ def median_root_to_leaf_lengths(tree):
     return np.median([tree.distance(tree.root, leaf) for leaf in tree.get_terminals()])
 
 
+#FIX THIS to account for inversions ie gene1, gene2, gene3 and gene3 gene2 and gene1 are synteny blocks; inversion do not affect
+########
 def synteny_blocks(genome1, genome2):
+
     pos_in_B = {gene: idx for idx, gene in enumerate(genome2)}
     blocks = []
     i = 0
@@ -187,6 +190,13 @@ if matched_leaf:
     print(f"Block length distribution: { {L: blocks.count(L) for L in set(blocks)} }")
 else:
     print("No matching leaf found between real and simulated genome names.")
+
+# fix synteny block analaysis
+# use smaller dataset atgc70 for testing its smaller 
+# two sep process; read genome data, calc paramaters, analzye syntenyy blocks, real data; the other is simulting the tree, using just tree and root
+# distribution of sytnenty blocks of all genome pairs in real data; easier to do for simulted data
+# third script: real and simulated genome comparions, it produces wassterstein distance for example
+# optimize gain and loss rates, keep inversion rate at 0
 
 
 
