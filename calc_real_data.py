@@ -49,5 +49,5 @@ for genome1, genome2 in combinations(leaf_names, 2):
 # plt.show()
 
 
-with open("real_lengths.txt", "w") as f:
-    f.write(str(all_block_lengths))
+# with open("real_lengths.txt", "w") as f:
+#     f.write(str(all_block_lengths))
