@@ -7,14 +7,15 @@ from collections import Counter
 import matplotlib.pyplot as plt
 from synteny_tools import findSyntenyReal
 
-def evolve_genome_branch(genome, branch_length, gain_rate, loss_rate, inv_rate, gain_genes):
+def evolve_genome_branch(genome, branch_length, gain_rate, loss_rate, inv_rate, next_gene_id_holder):
     genome = genome.copy()
     gains = np.random.poisson(gain_rate * branch_length)
     losses = np.random.poisson(loss_rate * branch_length)
     inversions = np.random.poisson(inv_rate * branch_length)
 
     for _ in range(gains):
-        new_gene = random.choice(gain_genes)
+        new_gene = f"cog.{next_gene_id_holder[0]}"
+        next_gene_id_holder[0] += 1
         idx = random.randrange(len(genome)+1)
         genome.insert(idx, new_gene)
 
@@ -33,7 +34,7 @@ def evolve_genome_branch(genome, branch_length, gain_rate, loss_rate, inv_rate, 
 def median_root_to_leaf_lengths(tree):
     return np.median([tree.distance(tree.root, leaf) for leaf in tree.get_terminals()])
 
-def evolve_genome(tree, root_genome, per_gene_gain_rate, per_gene_loss_rate, per_gene_inv_rate, gain_genes):
+def evolve_genome(tree, root_genome, per_gene_gain_rate, per_gene_loss_rate, per_gene_inv_rate, next_gene_id_holder):
     genomes = {}
     num_genes = len(root_genome)
     median_path_length = median_root_to_leaf_lengths(tree)
@@ -47,7 +48,7 @@ def evolve_genome(tree, root_genome, per_gene_gain_rate, per_gene_loss_rate, per
         for child in parent.clades:
             parent_genome = genomes[parent]
             child_genome = evolve_genome_branch(parent_genome, child.branch_length,
-                                                branch_gain_rate, branch_loss_rate, branch_inv_rate, gain_genes)
+                                                branch_gain_rate, branch_loss_rate, branch_inv_rate, next_gene_id_holder)
             genomes[child] = child_genome
     return genomes
 
@@ -88,68 +89,47 @@ CC_FILE = f"{DATASET}/atgc.cc.csv"
 
 # Load tree
 tree = Phylo.read(TREE_FILE, "newick")
-
-
-
-
-# Load root genome (just use first genome from file)
 real_genomes = get_real_genomes_from_cc(CC_FILE)
-with open("ATGC0070/atgc.info.tab", "r") as f:
-    first_line = f.readline().strip()
-    first_value = first_line.split()[0]
-root_genome = real_genomes[first_value]
 
-# for randomly inserting genes that exist in the tree not something else; IS THIS RIGHT?
-all_cls_ids = list({gene for genes in real_genomes.values() for gene in genes})
+# Compute median genome size
+median_length = int(np.median([len(g) for g in real_genomes.values()]))
+
+# Build artificial root genome: ["cog.1", ..., "cog.L"]
+root_genome = [f"cog.{i+1}" for i in range(median_length)]
+
+# Create global gene counter starting after root genome
+next_gene_id_holder = [len(root_genome) + 1]
 
 # Simulate all genomes
 simulated_genomes = evolve_genome(tree, root_genome,
-                                   per_gene_gain_rate=0.1,
-                                   per_gene_loss_rate=0.1,
-                                   per_gene_inv_rate=0.0,
-                                   gain_genes = all_cls_ids)
+                                  per_gene_gain_rate=0.1,
+                                  per_gene_loss_rate=0.1,
+                                  per_gene_inv_rate=0.0,
+                                  next_gene_id_holder=next_gene_id_holder)
 
-# Collect synteny block lengths for all leaf pairs
+# Collect synteny block lengths per pair in a dictionary
 leaves = tree.get_terminals()
-all_block_lengths = []
+simulated_pairwise_blocks = {}
 
 for leaf1, leaf2 in combinations(leaves, 2):
     genome1 = simulated_genomes[leaf1]
     genome2 = simulated_genomes[leaf2]
     blocks = findSyntenyReal(genome1, genome2)
-    all_block_lengths.extend([abs(b[4]) for b in blocks if len(b) > 4])
+    block_lengths = [abs(b[4]) for b in blocks if len(b) > 4]
+    simulated_pairwise_blocks[(leaf1.name, leaf2.name)] = block_lengths
 
-# Summarize block length distribution
-# print(len(all_block_lengths))
-
-def run_simulation(tree, root_genome, gain, loss, inv_rate, gain_genes):
-    genomes = evolve_genome(tree, root_genome, gain, loss, inv_rate, gain_genes)
+def run_simulation(tree, root_genome, gain, loss, inv_rate):
+    next_gene_id_holder = [len(root_genome) + 1]
+    genomes = evolve_genome(tree, root_genome, gain, loss, inv_rate, next_gene_id_holder)
     leaves = tree.get_terminals()
-    all_block_lengths = []
+    pairwise_blocks = {}
 
     for leaf1, leaf2 in combinations(leaves, 2):
         g1 = genomes[leaf1].copy()
         g2 = genomes[leaf2].copy()
         blocks = findSyntenyReal(g1, g2)
-        all_block_lengths.extend([abs(b[4]) for b in blocks if len(b) > 4])
+        block_lengths = [abs(b[4]) for b in blocks if len(b) > 4]
+        pairwise_blocks[(leaf1.name, leaf2.name)] = block_lengths
 
-    return all_block_lengths
+    return pairwise_blocks
 
-
-
-# plt.hist(all_block_lengths, bins=range(1, max(all_block_lengths)+2), density=True, edgecolor='black')
-# plt.xlabel("Synteny Block Length")
-# plt.ylabel("Normalized Frequency")
-# plt.title("Distribution of Synteny Blocks (All Leaf Pairs)")
-# plt.tight_layout()
-# plt.show()
-
-# real_lengths = []
-# for leaf1, leaf2 in combinations(leaves, 2):
-#     g1 = real_genomes[leaf1.name]
-#     g2 = real_genomes[leaf2.name]
-#     blocks = findSyntenyReal(g1.copy(), g2.copy())
-#     block_lengths = [block[4] for block in blocks]
-#     real_lengths.extend(block_lengths)
-# with open("real_lengths.txt", "w") as f:
-#     f.write(" ".join(map(str, real_lengths)))
