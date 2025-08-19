@@ -12,10 +12,8 @@ def get_real_genomes_from_cc(dataset):
         "cog_ID", "cls_ID", "match_class"
     ])
 
-    # Filter rows where cls_ID exists (ignore missing annotations)
     df = df.dropna(subset=["cls_ID"])
 
-    # Reconstruct gene order per genome
     return df.groupby("genome_ID")["cls_ID"].apply(list).to_dict()
 
 def convert_to_numeric(cls_list):
@@ -29,10 +27,6 @@ leaf_names = [leaf.name for leaf in tree.get_terminals()]
 
 def get_pair_blocks():
     real_pairwise_blocks = {}
-
-
-# Compare all leaf-to-leaf genome pairs; doesnt store the syntenty blocks, but we can change this later
-# not needed for my task as of now
     for genome1, genome2 in combinations(leaf_names, 2):
         if genome1 not in genome_to_genes or genome2 not in genome_to_genes:
             continue  # skip missing genomes
@@ -45,14 +39,15 @@ def get_pair_blocks():
         real_pairwise_blocks[(genome1, genome2)] = block_lengths
     return real_pairwise_blocks
 
-# Plot the distribution
-# plt.hist(all_block_lengths, bins=range(1, max(all_block_lengths)+2), density=True, edgecolor='black')
+
+# #optional plot
+# real_blocks = get_pair_blocks()
+
+# all_lengths = [length for blocklist in real_blocks.values() for length in blocklist]
+# plt.figure(figsize=(10, 5))
+# plt.hist(all_lengths, bins=range(1, max(all_lengths) + 2), color="skyblue", edgecolor="black")
+# plt.title("Distribution of Synteny Block Lengths (Real Genome Pairs)")
 # plt.xlabel("Synteny Block Length")
-# plt.ylabel("Normalized Frequency")
-# plt.title("Distribution of Synteny Blocks (All Leaf Pairs)")
+# plt.ylabel("Frequency")
 # plt.tight_layout()
 # plt.show()
-
-
-# with open("real_lengths.txt", "w") as f:
-#     f.write(str(all_block_lengths))
