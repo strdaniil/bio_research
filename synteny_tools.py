@@ -1,3 +1,4 @@
+
 def findSyntenyReal(genome1, genome2):
     genome1size = len(genome1)
     genome2size = len(genome2)

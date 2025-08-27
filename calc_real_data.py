@@ -3,6 +3,7 @@ import pandas as pd
 from itertools import combinations
 import matplotlib.pyplot as plt
 from synteny_tools import findSyntenyReal
+from synteny_tools import findSyntenyReal_fast
 
 
 def get_real_genomes_from_cc(dataset):
@@ -51,3 +52,4 @@ def get_pair_blocks():
 # plt.ylabel("Frequency")
 # plt.tight_layout()
 # plt.show()
+

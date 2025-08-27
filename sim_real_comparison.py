@@ -32,7 +32,7 @@ best_params = None
 
 real_pairs = get_pair_blocks()
 
-sim_pairs = run_simulation(tree, root_genome, 0.1, 0.1, inv_rate=0.0)
+sim_pairs = run_simulation(tree, root_genome, 0.1, 0.1, 0.0)
 
 #print(real_pairs, sim_pairs)
 
@@ -211,7 +211,7 @@ pooled_sim_counts: Dict[Tuple[str, str], Counter] = defaultdict(Counter)
 
 for i in range(n_runs):
     sim_pairs: Dict[Tuple[str, str], List[int]] = run_simulation(
-        tree, root_genome, gain_rate, loss_rate, inv_rate=inv_rate
+        tree, root_genome, gain_rate, loss_rate, inv_rate
     )
     # Pool raw counts (do NOT normalize per run)
     for pair, sim_lengths in sim_pairs.items():

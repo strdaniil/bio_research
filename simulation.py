@@ -188,7 +188,7 @@ def run_simulation(
         next_gene_id_holder
     )
     leaves = tree.get_terminals()
-    print(leaves)
+
     pairwise_blocks = {}
 
     for leaf1, leaf2 in combinations(leaves, 2):
@@ -197,7 +197,7 @@ def run_simulation(
         blocks = findSyntenyReal(g1, g2)
         block_lengths = [abs(b[4]) for b in blocks if len(b) > 4]
         pairwise_blocks[(leaf1.name, leaf2.name)] = block_lengths
-    print(pairwise_blocks)
+
 
     return pairwise_blocks
 
