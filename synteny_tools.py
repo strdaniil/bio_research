@@ -1,5 +1,5 @@
 
-def findSyntenyReal(genome1, genome2):
+def findSyntenyReal1(genome1, genome2):
     genome1size = len(genome1)
     genome2size = len(genome2)
     # block = []
@@ -207,3 +207,128 @@ def findSimBlocks(genome1, genome2):
             block_lengths.append(longestBlockLength)
 
     return block_lengths
+
+def findSyntenyReal2(genome1, genome2):
+    genome1size = len(genome1)
+    genome2size = len(genome2)
+    # block = []
+    blocks = []
+
+    # Because the genomes are circular, move the last gene in the first genome to position 0 until it is no longer the start of a block
+    push = 0
+    j = 0
+    while j < genome2size:
+        if push < min(genome1size,genome2size) and j > -1 and genome2[j] == genome1[-1] and genome2[(j+1)%genome2size] == genome1[0]:
+            if push == 0:
+                startPos2 = (j+1)%genome2size
+            push += 1
+            genome1.insert(0, genome1.pop())
+            j -= 2
+        j += 1
+
+    # If the genomes are the same, return early
+    if min(genome1size,genome2size) == push:
+        blocks.append([push,0,genome1size-1,startPos2,(startPos2-1)%genome2size])
+        return blocks
+
+    # Iterate through the genomes to find synteny blocks
+    blocksTemp = []
+    addedBlock = True
+    while addedBlock:
+        addedBlock = False
+
+        # Build an index: gene -> sorted list of positions in genome2 (excluding deleted)
+        pos2 = {}
+        for jj in range(genome2size):
+            g = genome2[jj]
+            if g != -1:
+                lst = pos2.get(g)
+                if lst is None:
+                    pos2[g] = [jj]
+                else:
+                    lst.append(jj)
+
+        i = 0
+        while i < genome1size:
+            longestBlockLength = 0
+            # Ensure defined each i-iteration
+            inversed = False
+
+            # Skip deleted genes
+            while i < genome1size and genome1[i] == -1:
+                i += 1
+            if i == genome1size:  # reached end of genome
+                break
+
+            gene = genome1[i]
+
+            # ---- Forward (regular) matches: iterate only candidate js ----
+            cand_js = pos2.get(gene, ())
+            # Iterate in ascending j to preserve your original tie behavior (first-found kept)
+            for j in cand_js:
+                length = 1
+                # extend forward
+                while (genome1[(i+length) % genome1size] != -1 and
+                    genome1[(i+length) % genome1size] == genome2[(j+length) % genome2size]):
+                    length += 1
+                if length > longestBlockLength:
+                    inversed = False
+                    longestBlockLength = length
+                    startPos1 = i
+                    startPos2 = j
+
+            # ---- Inverse matches: same candidate js but scan in descending order ----
+            # Keep j > 0 to exactly preserve your current behavior that skips index 0
+            for j in reversed(cand_js):
+                if j == 0:
+                    continue
+                length = 1
+                # extend backward on genome2
+                while (length < genome1size and
+                    genome1[(i+length) % genome1size] != -1 and
+                    genome1[(i+length) % genome1size] == genome2[(j-length) % genome2size]):
+                    length += 1
+                if length > longestBlockLength:
+                    inversed = True
+                    longestBlockLength = length
+                    startPos1 = i
+                    startPos2 = j
+
+        # ... (rest of your code adding blocks / deleting genes)
+
+
+
+            # Add the longest block found to the list of blocks
+            if (longestBlockLength > 0):
+                addedBlock = True
+                if (inversed):
+                    blocksTemp.append([(startPos1-push)%genome1size, (startPos1+longestBlockLength-push-1),
+                                        startPos2, (startPos2-longestBlockLength+1), -longestBlockLength])
+                else:
+                    blocksTemp.append([(startPos1-push)%genome1size, (startPos1+longestBlockLength-push-1),
+                                        startPos2, (startPos2+longestBlockLength-1), longestBlockLength])
+                i += longestBlockLength
+            # If no block found, delete the gene (because no block will ever be found for it)
+            else:
+                genome1[i] = -1
+                i += 1
+
+        if addedBlock:
+            blocksTemp = sorted(blocksTemp, key=lambda x: abs(x[0]), reverse=True)
+            clearOverlaps(blocksTemp)
+            deleteGenes(genome1, genome2, blocksTemp)
+            # Move all the new blocks to the list of all blocks
+            while len(blocksTemp) != 0:
+                blocks.append(blocksTemp.pop(0))
+        
+    blocks = sorted(blocks, key=lambda x: abs(x[4]), reverse=True)
+
+    # Increase all indexes by 1 to start at 1 instead of 0
+    for i in range(len(blocks)):
+        blocks[i][0] += 1
+        blocks[i][1] += 1
+        blocks[i][2] += 1
+        blocks[i][3] += 1
+        blocks[i][4] = abs(blocks[i][4])
+    
+    return blocks

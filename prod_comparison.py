@@ -11,7 +11,7 @@ from scipy.stats import wasserstein_distance
 # If you have a fast version, import/alias it here:
 # from synteny_tools import findSyntenyReal
 # or: from calc_real_data import findSyntenyReal_fast as findSyntenyReal
-from synteny_tools import findSyntenyReal
+from synteny_tools import findSyntenyReal2
 
 from simulation import run_simulation  # expects your signature
 import pandas as pd
@@ -85,7 +85,7 @@ def _median_root_to_leaf(tree):
     return float(np.median([tree.distance(tree.root, lf) for lf in tree.get_terminals()]))
 
 
-def _build_real_pmfs(tree_path, cc_path, synteny_finder=findSyntenyReal):
+def _build_real_pmfs(tree_path, cc_path, synteny_finder=findSyntenyReal2):
     """
     Compute real SBL pmfs for each cognate pair of leaves in the tree.
     Returns dict { (nameA,nameB): (vals, probs) } with sorted pair keys.
@@ -148,7 +148,7 @@ def simulate_and_score(
     exp_trans: float,
     n_runs: int,
     seed: int | None = None,
-    synteny_finder=findSyntenyReal,
+    synteny_finder=findSyntenyReal2,
 ):
     """
     Runs n_runs simulations on the given tree/root genome, pools simulated SBL counts per pair,
@@ -263,7 +263,7 @@ def run_grid_2d(
     out_csv: str | None = None,
     huge_exp: float = 1e9,      # force k=1
     quiet: bool = False,
-    synteny_finder=findSyntenyReal,
+    synteny_finder=findSyntenyReal2,
 ):
     """
     Balanced flux: gain=loss=rf; inversion=0; translocation=rt; exponents huge (k=1).

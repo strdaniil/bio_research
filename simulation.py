@@ -5,8 +5,10 @@ import random
 from itertools import combinations
 from collections import Counter
 import matplotlib.pyplot as plt
-from synteny_tools import findSyntenyReal
+from synteny_tools import findSyntenyReal1, findSyntenyReal2
 import random
+import time
+
 
 def sample_truncated_powerlaw(L0, alpha=2.0):
     k_max = max(1, L0 // 2)
@@ -181,20 +183,29 @@ def run_simulation(
     gain_exp=2.0, loss_exp=2.0, inv_exp=2.0, trans_exp=2.0
 ):
     next_gene_id_holder = [len(root_genome) + 1]
+
     genomes = evolve_genome(
         tree, root_genome,
         per_gene_gain_rate, per_gene_loss_rate, per_gene_inv_rate, per_gene_trans_rate,
         gain_exp, loss_exp, inv_exp, trans_exp,
         next_gene_id_holder
     )
+
     leaves = tree.get_terminals()
 
     pairwise_blocks = {}
 
+    start_time = time.time()
+
     for leaf1, leaf2 in combinations(leaves, 2):
         g1 = genomes[leaf1].copy()
         g2 = genomes[leaf2].copy()
-        blocks = findSyntenyReal(g1, g2)
+        # start_time = time.time()
+        # blocks1 = findSyntenyReal1(g1.copy(), g2.copy())
+        # print("first algo:" + str(time.time() - start_time))
+        # start_time = time.time()
+        blocks = findSyntenyReal2(g1.copy(), g2.copy())
+        #print("second algo:" + str(time.time() - start_time))
         block_lengths = [abs(b[4]) for b in blocks if len(b) > 4]
         pairwise_blocks[(leaf1.name, leaf2.name)] = block_lengths
 
@@ -202,12 +213,15 @@ def run_simulation(
     return pairwise_blocks
 
 # optional plot
-sim_pairs = run_simulation(tree, root_genome, per_gene_gain_rate=0.1, per_gene_loss_rate=0.1, per_gene_inv_rate=0.0)
-all_sim_lengths = [length for blocks in sim_pairs.values() for length in blocks]
-plt.figure(figsize=(10, 5))
-plt.hist(all_sim_lengths, bins=range(1, max(all_sim_lengths)+2), color="orange", edgecolor="black", alpha=0.7)
-plt.title("Distribution of Simulated Synteny Block Lengths")
-plt.xlabel("Synteny Block Length")
-plt.ylabel("Frequency")
-plt.tight_layout()
-plt.show()
+# start_time = time.time()
+# sim_pairs = run_simulation(tree, root_genome, per_gene_gain_rate=0.1, per_gene_loss_rate=0.1, per_gene_inv_rate=0.0)
+# end_time = time.time()
+# print(end_time - start_time)
+# all_sim_lengths = [length for blocks in sim_pairs.values() for length in blocks]
+# plt.figure(figsize=(10, 5))
+# plt.hist(all_sim_lengths, bins=range(1, max(all_sim_lengths)+2), color="orange", edgecolor="black", alpha=0.7)
+# plt.title("Distribution of Simulated Synteny Block Lengths")
+# plt.xlabel("Synteny Block Length")
+# plt.ylabel("Frequency")
+# plt.tight_layout()
+# plt.show()

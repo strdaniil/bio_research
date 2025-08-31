@@ -221,6 +221,7 @@ for i in range(n_runs):
 # --------------------
 # Compute one Wasserstein-1 per pair and sum across pairs
 # --------------------
+
 total_wasserstein = 0.0
 num_compared_pairs = 0
 num_skipped_empty_real = 0
@@ -257,4 +258,6 @@ if num_compared_pairs > 0:
     print(f"Average Wasserstein distance per pair: {avg_wasserstein:.6f}")
 else:
     print("No pairs compared; check data generation.")
+
+end_time = time.time()
 
