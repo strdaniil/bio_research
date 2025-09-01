@@ -16,8 +16,10 @@ from synteny_tools import findSyntenyReal2
 from simulation import run_simulation  # expects your signature
 import pandas as pd
 
-import inspect, random
+# Cache: (tree_path, cc_path, finder_name) -> (real_pmfs, tree, genomes_numeric, median_root_to_leaf)
+_RPMFS_CACHE: dict[tuple[str, str, str], tuple[dict, object, dict, float]] = {}
 
+import inspect, random
 
 # ---------------------------
 # Helpers (self-contained)
@@ -87,26 +89,32 @@ def _median_root_to_leaf(tree):
     return float(np.median([tree.distance(tree.root, lf) for lf in tree.get_terminals()]))
 
 
-def _build_real_pmfs(tree_path, cc_path, synteny_finder=findSyntenyReal2):
+def _build_real_pmfs(tree_path, cc_path, synteny_finder=findSyntenyReal2, genomes_numeric=None):
     """
     Compute real SBL pmfs for each cognate pair of leaves in the tree.
-    Returns dict { (nameA,nameB): (vals, probs) } with sorted pair keys.
+    Returns (real_pmfs, tree, genomes_numeric, median_root_to_leaf).
     """
     tree = Phylo.read(tree_path, "newick")
-    leaf_names = [lf.name for lf in tree.get_terminals()]
-    genomes = _load_real_genomes_from_cc(cc_path)
+    # Load/convert once
+    if genomes_numeric is None:
+        genomes_str = _load_real_genomes_from_cc(cc_path)
+        genomes_numeric = {gid: _convert_to_numeric(v) for gid, v in genomes_str.items()}
+
+    # Only leaves that actually exist in CC
+    leaf_names = [lf.name for lf in tree.get_terminals() if lf.name in genomes_numeric]
 
     real_pmfs = {}
     for a, b in combinations(leaf_names, 2):
-        if a not in genomes or b not in genomes:
-            continue
-        g1 = _convert_to_numeric(genomes[a])
-        g2 = _convert_to_numeric(genomes[b])
+        g1 = genomes_numeric[a]
+        g2 = genomes_numeric[b]
         blocks = synteny_finder(g1.copy(), g2.copy())
         lens = [int(abs(bk[4])) for bk in blocks if len(bk) >= 5]
-        pair = tuple(sorted((a, b)))
+        pair = (a, b) if a <= b else (b, a)
         real_pmfs[pair] = _lengths_to_pmf(lens)
-    return real_pmfs, tree
+
+    med_path = float(np.median([tree.distance(tree.root, lf) for lf in tree.get_terminals()]))
+    return real_pmfs, tree, genomes_numeric, med_path
+
 
 
 def _make_root_genome(root_mode, tree, cc_path, real_genomes=None):
@@ -155,28 +163,36 @@ def _make_root_genome(root_mode, tree, cc_path, real_genomes=None):
 #     """
 #     Runs n_runs simulations on the given tree/root genome, pools simulated SBL counts per pair,
 #     builds pmfs once, computes Wasserstein-1 vs real pmfs for each pair, and sums across pairs.
-
-#     Returns:
-#         dict with keys:
-#           'sum_w1', 'avg_w1', 'n_pairs', 'skipped_real', 'skipped_sim',
-#           'params' (echo), plus 'dataset', 'median_root_to_leaf', 'timestamp'
 #     """
-#     # Real pmfs (and the tree to get leaves & med path length)
-#     real_pmfs, tree = _build_real_pmfs(tree_path, cc_path, synteny_finder=synteny_finder)
+#     # --- Real side: cache to avoid rebuilding for every grid point ---
+#     cache_key = (tree_path, cc_path, getattr(synteny_finder, "__name__", "finder"))
+#     try:
+#         _RPMFS_CACHE  # type: ignore
+#     except NameError:
+#         globals()["_RPMFS_CACHE"] = {}
 
-#     # Root genome
-#     real_genomes = _load_real_genomes_from_cc(cc_path)
+#     if cache_key in _RPMFS_CACHE:
+#         real_pmfs, tree, real_genomes, med_path = _RPMFS_CACHE[cache_key]
+#     else:
+#         res = _build_real_pmfs(tree_path, cc_path, synteny_finder=synteny_finder)
+#         # Support both old (2-return) and new (4-return) versions
+#         if isinstance(res, tuple) and len(res) == 4:
+#             real_pmfs, tree, genomes_numeric, med_path = res
+#             real_genomes = genomes_numeric  # already numeric
+#         else:
+#             real_pmfs, tree = res
+#             real_genomes = _load_real_genomes_from_cc(cc_path)
+#             med_path = _median_root_to_leaf(tree)
+#         _RPMFS_CACHE[cache_key] = (real_pmfs, tree, real_genomes, med_path)
+
+#     # Root genome (uses cached real_genomes)
 #     root_genome = _make_root_genome(root_mode, tree, cc_path, real_genomes=real_genomes)
 
 #     # Pool simulated counts across runs
 #     pooled_sim_counts: dict[tuple[str, str], Counter] = defaultdict(Counter)
 
-#     # Ensure deterministic-ish naming
-#     leaves = list(tree.get_terminals())
-#     leaf_names = [lf.name for lf in leaves]
-
 #     # Run simulations
-#     for r in range(n_runs):
+#     for _ in range(n_runs):
 #         sim_pairs = run_simulation(
 #             tree,
 #             root_genome,
@@ -189,9 +205,9 @@ def _make_root_genome(root_mode, tree, cc_path, real_genomes=None):
 #             inv_exp=exp_inv,
 #             trans_exp=exp_trans,
 #         )
-#         # Pool counts; standardize pair key ordering
+#         # Pool counts; standardize pair key ordering without tuple(sorted(...)) overhead
 #         for (a, b), lens in sim_pairs.items():
-#             pair = tuple(sorted((a, b)))
+#             pair = (a, b) if a <= b else (b, a)
 #             if lens:
 #                 pooled_sim_counts[pair].update(int(x) for x in lens)
 
@@ -206,18 +222,22 @@ def _make_root_genome(root_mode, tree, cc_path, real_genomes=None):
 #             skipped_real += 1
 #             continue
 #         sim_counts = pooled_sim_counts.get(pair)
-#         if not sim_counts or sum(sim_counts.values()) == 0:
+#         if not sim_counts:
 #             skipped_sim += 1
 #             continue
+#         s_total = sum(sim_counts.values())
+#         if s_total == 0:
+#             skipped_sim += 1
+#             continue
+
 #         s_vals = np.fromiter(sorted(sim_counts.keys()), dtype=int)
-#         s_probs = np.fromiter((sim_counts[v] / sum(sim_counts.values()) for v in s_vals), dtype=float)
+#         s_probs = np.fromiter((sim_counts[v] / s_total for v in s_vals), dtype=float)
 
 #         dist = wasserstein_distance(r_vals, s_vals, u_weights=r_probs, v_weights=s_probs)
 #         total_w1 += float(dist)
 #         compared += 1
 
 #     avg_w1 = (total_w1 / compared) if compared > 0 else float("nan")
-#     med_path = _median_root_to_leaf(tree)
 #     dataset = os.path.basename(os.path.normpath(atgc_dir))
 
 #     return {
@@ -245,6 +265,7 @@ def _make_root_genome(root_mode, tree, cc_path, real_genomes=None):
 #             "cc_path": cc_path,
 #         },
 #     }
+
 
 def simulate_and_score(
     atgc_dir: str,
@@ -496,4 +517,4 @@ if __name__ == "__main__":
     # print(json.dumps(r, indent=2))
 
     # Example 21×21 grid:
-    run_grid_2d(atgc_dir="ATGC0070", n_runs=100, seed=42, quiet=False)
+    run_grid_2d(atgc_dir="ATGC0070", n_runs=100, seed=None, quiet=False)
