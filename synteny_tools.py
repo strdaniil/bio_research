@@ -332,3 +332,27 @@ def findSyntenyReal2(genome1, genome2):
         blocks[i][4] = abs(blocks[i][4])
     
     return blocks
+
+
+def findSyntenyMulti(genome1_parts, genome2_parts, min_len=2, prefilter=True):
+    """
+    genome*_parts: list of chromosomes; each chromosome is a list[gene_id] (circular).
+    Returns rows: [chr1_idx, L1, R1, chr2_idx, L2, R2, length] (1-based).
+    """
+    out = []
+    for c1, chr1 in enumerate(genome1_parts, start=1):
+        if not chr1: 
+            continue
+        s1 = set(chr1) if prefilter else None
+        for c2, chr2 in enumerate(genome2_parts, start=1):
+            if not chr2:
+                continue
+            if prefilter and s1.isdisjoint(chr2):
+                continue
+            # IMPORTANT: pass copies because your function mutates inputs
+            blocks = findSyntenyReal2(chr1[:], chr2[:])
+            for L1, R1, L2, R2, K in blocks:
+                if K >= min_len:
+                    out.append([c1, L1, R1, c2, L2, R2, K])
+    out.sort(key=lambda r: r[-1], reverse=True)
+    return out

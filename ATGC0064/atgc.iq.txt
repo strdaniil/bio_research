@@ -1,0 +1,175 @@
+IQ-TREE 2.3.5 built Jun 27 2024
+
+Input file name: TREE/ATGC0064.set.afa
+Type of analysis: ModelFinder + tree reconstruction
+Random seed number: 253956
+
+REFERENCES
+----------
+
+To cite IQ-TREE please use:
+
+Bui Quang Minh, Heiko A. Schmidt, Olga Chernomor, Dominik Schrempf,
+Michael D. Woodhams, Arndt von Haeseler, and Robert Lanfear (2020)
+IQ-TREE 2: New models and efficient methods for phylogenetic inference
+in the genomic era. Mol. Biol. Evol., in press.
+https://doi.org/10.1093/molbev/msaa015
+
+To cite ModelFinder please use: 
+
+Subha Kalyaanamoorthy, Bui Quang Minh, Thomas KF Wong, Arndt von Haeseler,
+and Lars S Jermiin (2017) ModelFinder: Fast model selection for
+accurate phylogenetic estimates. Nature Methods, 14:587–589.
+https://doi.org/10.1038/nmeth.4285
+
+SEQUENCE ALIGNMENT
+------------------
+
+Input data: 10 sequences with 1615641 nucleotide sites
+Number of constant sites: 1.12196e+06 (= 69.4436% of all sites)
+Number of invariant (constant or ambiguous constant) sites: 1.12196e+06 (= 69.4436% of all sites)
+Number of parsimony informative sites: 487736
+Number of distinct site patterns: 7178
+
+ModelFinder
+-----------
+
+Best-fit model according to BIC: GTR+F+R9
+
+List of models sorted by BIC scores: 
+
+Model                  LogL         AIC      w-AIC        AICc     w-AICc         BIC      w-BIC
+GTR+F+R9        -4642889.954 9285861.908 -  0.00218 9285861.910 -  0.00218 9286366.013 +    0.998
+GTR+F+R10       -4642881.826 9285849.652 +    0.998 9285849.654 +    0.998 9286378.347 -  0.00209
+GTR+F+R8        -4642919.388 9285916.776 - 2.65e-15 9285916.778 - 2.65e-15 9286396.290 - 2.66e-07
+GTR+F+I+R10     -4642912.295 9285912.590 - 2.15e-14 9285912.592 - 2.15e-14 9286453.581 - 9.64e-20
+GTR+F+I+R9      -4642945.619 9285975.238 - 5.35e-28 9285975.240 - 5.35e-28 9286491.638 - 5.25e-28
+GTR+F+R7        -4643001.575 9286077.150 - 3.97e-50 9286077.152 - 3.97e-50 9286532.074 -  8.7e-37
+GTR+F+I+R8      -4642993.054 9286066.108 - 9.91e-48 9286066.110 - 9.92e-48 9286557.918 - 2.13e-42
+GTR+F+I+R7      -4643058.391 9286192.782 - 3.09e-75 9286192.784 - 3.09e-75 9286660.001 - 1.45e-64
+GTR+F+I+R6      -4643286.936 9286645.872 - 1.26e-173 9286645.874 - 1.27e-173 9287088.501 - 1.3e-157
+GTR+F+R6        -4643298.956 9286667.912 - 2.07e-178 9286667.914 - 2.07e-178 9287098.245 - 9.93e-160
+GTR+F+I+R5      -4644331.870 9288731.740 -        0 9288731.741 -        0 9289149.778 -        0
+GTR+F+R5        -4644851.110 9289768.220 -        0 9289768.221 -        0 9290173.963 -        0
+GTR+F+I+R4      -4648022.762 9296109.524 -        0 9296109.525 -        0 9296502.972 -        0
+GTR+F+R4        -4649862.363 9299786.726 -        0 9299786.727 -        0 9300167.879 -        0
+GTR+F+I+R3      -4653146.065 9306352.130 -        0 9306352.131 -        0 9306720.987 -        0
+GTR+F+R3        -4655778.404 9311614.808 -        0 9311614.809 -        0 9311971.370 -        0
+GTR+F+I+R2      -4662662.775 9325381.550 -        0 9325381.551 -        0 9325725.817 -        0
+GTR+F+R2        -4663052.694 9326159.388 -        0 9326159.389 -        0 9326491.360 -        0
+GTR+F+I+G4      -4663162.876 9326379.752 -        0 9326379.753 -        0 9326711.724 -        0
+GTR+F+G4        -4663222.052 9326496.104 -        0 9326496.105 -        0 9326815.780 -        0
+GTR+F+I         -4665326.498 9330704.996 -        0 9330704.997 -        0 9331024.672 -        0
+GTR+F           -4693636.220 9387322.440 -        0 9387322.441 -        0 9387629.821 -        0
+
+AIC, w-AIC   : Akaike information criterion scores and weights.
+AICc, w-AICc : Corrected AIC scores and weights.
+BIC, w-BIC   : Bayesian information criterion scores and weights.
+
+Plus signs denote the 95% confidence sets.
+Minus signs denote significant exclusion.
+
+SUBSTITUTION PROCESS
+--------------------
+
+Model of substitution: GTR+F+R9
+
+Rate parameter R:
+
+  A-C: 2.2131
+  A-G: 4.1254
+  A-T: 0.6005
+  C-G: 1.7823
+  C-T: 8.4121
+  G-T: 1.0000
+
+State frequencies: (empirical counts from alignment)
+
+  pi(A) = 0.2855
+  pi(C) = 0.2165
+  pi(G) = 0.2331
+  pi(T) = 0.2649
+
+Rate matrix Q:
+
+  A   -0.7332    0.2196    0.4407   0.07292
+  C    0.2895    -1.501    0.1904     1.021
+  G    0.5397    0.1769    -0.838    0.1214
+  T   0.07857    0.8348    0.1068     -1.02
+
+Model of rate heterogeneity: FreeRate with 9 categories
+Site proportion and rates:  (0.6776,0.06488) (0.05439,0.1126) (0.05698,0.1389) (0.04569,0.6747) (0.06126,0.7646) (0.01293,0.8035) (0.07961,0.804) (0.008848,0.8046) (0.002699,290)
+
+ Category  Relative_rate  Proportion
+  1         0.06488        0.6776
+  2         0.1126         0.05439
+  3         0.1389         0.05698
+  4         0.6747         0.04569
+  5         0.7646         0.06126
+  6         0.8035         0.01293
+  7         0.804          0.07961
+  8         0.8046         0.008848
+  9         290            0.002699
+
+MAXIMUM LIKELIHOOD TREE
+-----------------------
+
+Log-likelihood of the tree: -4642787.8984 (s.e. 2559.2093)
+Unconstrained log-likelihood (without tree): -5299259.6450
+Number of free parameters (#branches + #model parameters): 41
+Akaike information criterion (AIC) score: 9285657.7969
+Corrected Akaike information criterion (AICc) score: 9285657.7990
+Bayesian information criterion (BIC) score: 9286161.9018
+
+Total tree length (sum of branch lengths): 2.7817
+Sum of internal branch lengths: 2.7632 (99.3317% of tree length)
+
+NOTE: Tree is UNROOTED although outgroup taxon 'GCF_000211375.1' is drawn at root
+
++--GCF_000211375.1
+|
++--GCF_008369805.1
+|
+|  +--GCF_018314255.1
++--| (/1)
+   |     +--GCF_000298115.2
+   |  +--| (/1)
+   |  |  +--GCF_033096565.1
+   +--| (/1)
+      |                                                   +--GCF_009739535.1
+      |                       +---------------------------| (/1)
+      |                       |                           +--GCF_022810745.1
+      +-----------------------| (/1)
+                              |                                +--GCF_014905035.1
+                              +--------------------------------| (/1)
+                                                               |  +--GCF_014879295.1
+                                                               +--| (/1)
+                                                                  +--GCF_001922025.1
+
+Tree in newick format:
+
+(GCF_000211375.1:0.0023194570,GCF_008369805.1:0.0014592891,(GCF_018314255.1:0.0018549899,((GCF_000298115.2:0.0010346054,GCF_033096565.1:0.0016868036)/1:0.0607424625,((GCF_009739535.1:0.0010979101,GCF_022810745.1:0.0029490662)/1:0.8742357335,(GCF_014905035.1:0.0010597723,(GCF_014879295.1:0.0014935399,GCF_001922025.1:0.0036348248)/1:0.0006120396)/1:1.0368622451)/1:0.7348130204)/1:0.0541987341)/1:0.0016912673);
+
+ALISIM COMMAND
+--------------
+To simulate an alignment of the same length as the original alignment, using the tree and model parameters estimated from this analysis, you can use the following command:
+
+--alisim simulated_MSA -t TREE/ATGC0064.set.afa.treefile -m "GTR{2.21306,4.12541,0.600545,1.78229,8.41205}+F{0.285466,0.216532,0.233069,0.264933}+R9{0.677595,0.0648831,0.0543916,0.112571,0.0569845,0.138883,0.0456859,0.674686,0.0612619,0.764632,0.012928,0.803526,0.0796065,0.804017,0.0088478,0.804597,0.00269927,290.012}" --length 1615641
+
+To mimic the alignment used to produce this analysis, i.e. simulate an alignment of the same length as the original alignment, using the tree and model parameters estimated from this analysis *and* copying the same gap positions as the original alignment, you can use the following command:
+
+iqtree -s TREE/ATGC0064.set.afa --alisim mimicked_MSA
+
+To simulate any number of alignments in either of the two commandlines above, use the --num-alignments options, for example mimic 100 alignments you would use the command line:
+
+iqtree -s TREE/ATGC0064.set.afa --alisim mimicked_MSA --num-alignments 100
+
+For more information on using AliSim, please visit: www.iqtree.org/doc/AliSim
+
+TIME STAMP
+----------
+
+Date and time: Fri Feb 14 23:14:38 2025
+Total CPU time used: 717.81313 seconds (0h:11m:57s)
+Total wall-clock time used: 365.720939 seconds (0h:6m:5s)
+
